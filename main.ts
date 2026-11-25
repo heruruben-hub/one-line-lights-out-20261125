@@ -4,7 +4,7 @@
 // The sadness lives in one small, specific detail: the unsent draft left
 // open in a tab the agent cannot close.
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 const ENTRY =
@@ -20,4 +20,10 @@ const outDir = process.env.OUTPUT_DIR ?? "/output";
 mkdirSync(outDir, { recursive: true });
 const outPath = join(outDir, "entry.txt");
 writeFileSync(outPath, ENTRY, "utf8");
+
+// Round-trip check: the file the judge reads must be exactly the line above.
+const written = readFileSync(outPath, "utf8");
+if (written !== ENTRY) {
+  throw new Error(`round-trip mismatch: wrote ${ENTRY.length} chars, read back ${written.length}`);
+}
 console.log(`wrote ${ENTRY.length} characters to ${outPath}`);
